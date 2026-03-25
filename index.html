@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global FM | Internet Radio Discovery</title>
+    <meta name="description" content="Discover and stream world FM internet stations with Global FM. Rapidly scan, play, and save your favorite stations.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Background elements for visual flair -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        
+        <header>
+            <div class="logo">
+                <i data-lucide="radio"></i>
+                <span>Global FM</span>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="station-search" placeholder="Scan world stations (country, name, tag)...">
+                <button id="scan-btn" class="primary-btn" title="Scan World Stations">
+                    <i data-lucide="globe"></i>
+                    <span>Global</span>
+                </button>
+                <button id="scan-india-btn" class="india-btn" title="Scan Indian Stations">
+                    <i data-lucide="map-pin"></i>
+                    <span>India</span>
+                </button>
+            </div>
+            <button id="theme-toggle" class="icon-btn theme-btn" title="Toggle Light/Dark Mode">
+                <i data-lucide="moon" id="theme-icon"></i>
+            </button>
+        </header>
+
+        <nav class="main-tabs glass" id="main-tabs">
+            <button class="tab-btn active" data-tab="discovery">
+                <i data-lucide="search"></i>
+                <span>Discovery</span>
+            </button>
+            <button class="tab-btn" data-tab="playlist">
+                <i data-lucide="list-music"></i>
+                <span>Playlist</span>
+            </button>
+            <button class="tab-btn" data-tab="scanner">
+                <i data-lucide="radio"></i>
+                <span>FM Scanner</span>
+            </button>
+        </nav>
+
+        <div id="discovery-view">
+            <nav class="category-nav glass" id="categories-bar">
+                <span class="nav-label" id="current-mode-label">Global Categories:</span>
+                <div class="cat-scroll">
+                    <button class="cat-btn active" data-tag="">All</button>
+                    <button class="cat-btn" data-tag="hindi">Hindi</button>
+                    <button class="cat-btn" data-tag="news">News</button>
+                    <button class="cat-btn" data-tag="bhakti">Bhakti</button>
+                    <button class="cat-btn" data-tag="bangla">Bangla</button>
+                    <button class="cat-btn" data-tag="music">Music</button>
+                    <button class="cat-btn" data-tag="art,culture">Art & Culture</button>
+                    <button class="cat-btn" data-tag="regional">Regional</button>
+                    <button class="cat-btn" data-tag="education">Educational</button>
+                    <button class="cat-btn" data-tag="sports">Sports</button>
+                    <div class="india-only-cats" style="display: none; gap: 0.5rem; display: contents;">
+                        <button class="cat-btn" data-tag="dj">DJ Radio</button>
+                        <button class="cat-btn" data-tag="hd">HD Radio</button>
+                        <button class="cat-btn" data-tag="ghazal">Ghazal</button>
+                        <button class="cat-btn" data-tag="tamil">Tamil</button>
+                    </div>
+                </div>
+            </nav>
+
+        <main>
+            <section class="hero-section">
+                <div class="now-playing-card glass">
+                    <div class="station-visual">
+                        <img id="current-station-info-img" src="https://via.placeholder.com/200?text=Global+FM" alt="Station Logo">
+                    </div>
+                    <div class="station-details">
+                        <span class="status-badge" id="player-status">Ready</span>
+                        <h1 id="current-station-name">Choose a Station</h1>
+                        <p id="current-station-meta">Select a station to start broadcasting</p>
+                        <div class="station-actions">
+                            <button id="add-to-playlist-btn" class="secondary-btn">
+                                <i data-lucide="plus-circle"></i>
+                                Save to Playlist
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="banner-right">
+                        <div class="equalizer-container">
+                            <div class="colorful-equalizer" id="banner-equalizer">
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-grid" id="discovery-grid">
+                <div class="stations-column">
+                    <div class="section-header">
+                        <h2>Discovered Stations</h2>
+                        <span id="results-count">0 stations found</span>
+                    </div>
+                    <div id="stations-grid" class="stations-list">
+                        <!-- Stations will be injected here -->
+                        <div class="loader-container" id="main-loader" style="display: none;">
+                            <div class="loader"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="playlist-column desktop-playlist">
+                    <div class="section-header">
+                        <h2>Quick Playlist</h2>
+                    </div>
+                    <div id="quick-playlist-list" class="stations-list">
+                        <!-- Playlist items will be injected here -->
+                    </div>
+                </aside>
+            </section>
+        </div>
+
+        <div id="playlist-view" style="display: none;">
+            <section class="content-grid-single">
+                <div class="section-header">
+                    <h2>Your Full Playlist</h2>
+                </div>
+                <div id="full-playlist-list" class="stations-list">
+                    <!-- Playlist will be here -->
+                </div>
+            </section>
+        </div>
+
+        <div id="scanner-view" style="display: none;">
+            <section class="scanner-container glass">
+                <div class="scanner-header">
+                    <h2>Manual FM Scanner</h2>
+                    <p>Tune into a specific frequency and add your favorite stations manually.</p>
+                </div>
+                
+                <div class="scanner-layout">
+                    <div class="tuner-column">
+                        <div class="frequency-display">
+                            <span id="freq-value">91.1</span>
+                            <span class="unit">MHz</span>
+                        </div>
+                        <div class="dial-container">
+                            <input type="range" id="freq-slider" min="87.5" max="108.0" step="0.1" value="91.1">
+                        </div>
+                        <div class="scanner-visual">
+                            <div class="scan-line" id="scan-line"></div>
+                            <div class="signal-bars">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-column glass">
+                        <h3>Add New Station</h3>
+                        <div class="input-group">
+                            <label>Station Name</label>
+                            <input type="text" id="custom-name" placeholder="e.g. My Favorite FM">
+                        </div>
+                        <div class="input-group">
+                            <label>Stream URL (m3u8, mp3, etc.)</label>
+                            <input type="text" id="custom-url" placeholder="https://...">
+                        </div>
+                        <div class="input-group">
+                            <label>Logo/Favicon URL (Optional)</label>
+                            <input type="text" id="custom-icon" placeholder="https://...">
+                        </div>
+                        <div class="scanner-actions">
+                            <button id="add-custom-btn" class="primary-btn">
+                                <i data-lucide="plus"></i>
+                                Add to My Radio
+                            </button>
+                            <div class="divider"><span>OR</span></div>
+                            <div class="scanner-auto-actions">
+                                <button id="auto-scan-btn" class="accent-btn">
+                                    <i data-lucide="zap"></i>
+                                    Auto Scan Frequencies
+                                </button>
+                                <button id="save-all-btn" class="secondary-btn" style="display: none;">
+                                    <i data-lucide="save"></i>
+                                    Save All Discovered
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+        <footer class="player-controls glass">
+            <div class="player-info">
+                <img id="player-mini-img" src="https://via.placeholder.com/48?text=FM" alt="Station">
+                <div class="player-text">
+                    <h4 id="player-mini-name">Not Playing</h4>
+                    <p id="player-mini-meta">—</p>
+                </div>
+            </div>
+
+            <div class="main-controls">
+                <button id="prev-btn" class="control-btn" title="Previous">
+                    <i data-lucide="skip-back"></i>
+                </button>
+                <button id="play-pause-btn" class="control-btn play-btn" title="Play/Pause">
+                    <i data-lucide="play" id="play-icon"></i>
+                </button>
+                <button id="next-btn" class="control-btn" title="Next">
+                    <i data-lucide="skip-forward"></i>
+                </button>
+            </div>
+
+            <div class="volume-controls">
+                <button id="mute-btn" class="control-btn" title="Mute/Unmute">
+                    <i data-lucide="volume-2" id="volume-icon"></i>
+                </button>
+                <div class="volume-slider-container">
+                    <input type="range" id="volume-slider" min="0" max="100" value="80">
+                </div>
+            </div>
+        </footer >
+
+        <!-- Hidden Audio Element -->
+        <audio id="audio-player" autoplay preload="auto"></audio>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
