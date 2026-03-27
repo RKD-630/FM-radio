@@ -63,20 +63,19 @@
                 <span class="nav-label" id="current-mode-label">Global Categories:</span>
                 <div class="cat-scroll">
                     <button class="cat-btn active" data-tag="">All</button>
-                    <button class="cat-btn" data-tag="hindi">Hindi</button>
-                    <button class="cat-btn" data-tag="news">News</button>
+                    <button class="cat-btn" data-tag= hindi>Hindi</button>
                     <button class="cat-btn" data-tag="bhakti">Bhakti</button>
+                    <button class="cat-btn" data-tag="news">News</button>
+                    <button class="cat-btn" data-tag="bollywood">Bollywood</button>
                     <button class="cat-btn" data-tag="bangla">Bangla</button>
+                    <button class="cat-btn" data-tag="mix">Mix</button>
+                    <button class="cat-btn" data-tag="dance">Dance</button>
+                    <button class="cat-btn" data-tag="dj">DJ Radio</button>
+                    <button class="cat-btn" data-tag="hd">HD Radio</button>
                     <button class="cat-btn" data-tag="music">Music</button>
-                    <button class="cat-btn" data-tag="art,culture">Art & Culture</button>
-                    <button class="cat-btn" data-tag="regional">Regional</button>
-                    <button class="cat-btn" data-tag="education">Educational</button>
-                    <button class="cat-btn" data-tag="sports">Sports</button>
                     <div class="india-only-cats" style="display: none; gap: 0.5rem; display: contents;">
-                        <button class="cat-btn" data-tag="dj">DJ Radio</button>
-                        <button class="cat-btn" data-tag="hd">HD Radio</button>
-                        <button class="cat-btn" data-tag="ghazal">Ghazal</button>
-                        <button class="cat-btn" data-tag="tamil">Tamil</button>
+                    <button class="cat-btn" data-tag="south","devotion">South</button>
+                    <button class="cat-btn" data-tag="tamil">Tamil</button>
                     </div>
                 </div>
             </nav>
@@ -90,7 +89,8 @@
                     <div class="station-details">
                         <span class="status-badge" id="player-status">Ready</span>
                         <h1 id="current-station-name">Choose a Station</h1>
-                        <p id="current-station-meta">Select a station to start broadcasting</p>
+                        <marquee id="current-station-meta" direction="left" height="25px" width="60%" scrollamount="5">हमारे एप्लिकेशन का उपयोग करने के लिए धन्यवाद। हम आपके विश्वास और समर्थन के लिए वास्तव में आभारी हैं। हमारा लक्ष्य आपको एक सहज, विश्वसनीय और सहायक अनुभव प्रदान करना है, और हम आपकी आवश्यकताओं को बेहतर ढंग से पूरा करने के लिए अपनी सेवाओं को बेहतर बनाने के लिए लगातार प्रयासरत हैं। आपकी प्रतिक्रिया और सहयोग हमें विकास और नवाचार में मदद करते हैं, इसलिए कृपया अपने विचार हमारे साथ साझा करने में संकोच न करें। हमें खुशी है कि आप हमारे समुदाय का हिस्सा हैं और हम भविष्य में भी आपकी सेवा करते रहने के लिए तत्पर हैं। ----RKD --
+</marquee> 
                         <div class="station-actions">
                             <button id="add-to-playlist-btn" class="secondary-btn">
                                 <i data-lucide="plus-circle"></i>
@@ -102,6 +102,8 @@
                     <div class="banner-right">
                         <div class="equalizer-container">
                             <div class="colorful-equalizer" id="banner-equalizer">
+                                <div class="eq-bar"></div>
+                                <div class="eq-bar"></div>
                                 <div class="eq-bar"></div>
                                 <div class="eq-bar"></div>
                                 <div class="eq-bar"></div>
