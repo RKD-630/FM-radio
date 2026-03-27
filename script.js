@@ -184,10 +184,13 @@ function setupEventListeners() {
         lucide.createIcons();
         playerStatus.textContent = 'Paused';
         if (nowPlayingCard) nowPlayingCard.classList.remove('playing');
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'paused';
+        }
     };
 
     audioPlayer.onwaiting = () => {
-        playerStatus.textContent = 'Buffering...';
+        playerStatus.textContent = 'loading...';
     };
 
     audioPlayer.onerror = (e) => {
@@ -200,8 +203,18 @@ function setupEventListeners() {
     };
 
     audioPlayer.onloadstart = () => {
-        playerStatus.textContent = 'Buffering...';
+        playerStatus.textContent = 'Loading...';
     };
+
+    // Prevent background pausing
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && !audioPlayer.paused) {
+            // Re-assert playback state to OS
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+            }
+        }
+    });
 }
 
 // API Functions
@@ -242,7 +255,10 @@ function renderStations() {
 
     stationsGrid.innerHTML = currentStations.map((station, index) => `
         <div class="station-item" onclick="playStation(${index}, 'search', this)">
-            <img src="${station.favicon || 'https://via.placeholder.com/60?text=FM'}" class="list-img" onerror="this.src='https://via.placeholder.com/60?text=FM'">
+            <img src="${station.favicon || 'https://via.placeholder.com/60?text=FM'}" 
+                 class="list-img" 
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=FM';">
             <div class="item-info">
                 <h4>${station.name}</h4>
                 <p>${station.country} • ${station.tags ? station.tags.split(',').slice(0, 2).join(', ') : 'Radio'}</p>
@@ -262,7 +278,10 @@ function renderPlaylist() {
         ? `<div class="empty-state"><i data-lucide="list-music"></i><p>No stations saved yet</p></div>`
         : currentPlaylist.map((station, index) => `
             <div class="station-item" onclick="playStation(${index}, 'playlist', this)">
-                <img src="${station.favicon || 'https://via.placeholder.com/60?text=FM'}" class="list-img" onerror="this.src='https://via.placeholder.com/60?text=FM'">
+                <img src="${station.favicon || 'https://via.placeholder.com/60?text=FM'}" 
+                     class="list-img" 
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=FM';">
                 <div class="item-info">
                     <h4>${station.name}</h4>
                     <p>${station.country || 'Custom Station'}</p>
@@ -439,6 +458,8 @@ function playStation(index, source = 'search', element = null) {
         navigator.mediaSession.setActionHandler('pause', () => audioPlayer.pause());
         navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
         navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+        
+        navigator.mediaSession.playbackState = 'playing';
     }
 
     // Add active class
@@ -463,6 +484,7 @@ function updatePlayerUI(station) {
     playerMiniName.textContent = name;
     playerMiniMeta.textContent = country;
     playerMiniImg.src = img;
+    playerMiniImg.onerror = () => { playerMiniImg.src = 'https://via.placeholder.com/48?text=FM'; };
     
     playerStatus.textContent = 'Loading...';
 }
