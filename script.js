@@ -69,7 +69,16 @@ let discoveredFrequencies = [];
 // Initialize
 function init() {
     setupEventListeners();
-    fetchStations(); // Initial load (Trending)
+    
+    // Default setting: Indian FM
+    currentMode = 'India';
+    if (modeLabel) modeLabel.textContent = 'India Categories:';
+    if (indiaOnlyCats) indiaOnlyCats.style.display = 'contents';
+    
+    // Fetch Indian stations by default
+    fetchStations('', 'India');
+    updateActiveCat('All');
+    
     renderPlaylist();
     updateVolume(80);
     loadTheme();
@@ -87,8 +96,28 @@ function init() {
     
     // Auto-adjusting helper for mobile
     window.addEventListener('resize', () => {
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     });
+
+    // Request wake lock for mobile if available to prevent background sleep
+    if ('wakeLock' in navigator) {
+        let wakeLock = null;
+        const requestWakeLock = async () => {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) {
+                console.warn(`${err.name}, ${err.message}`);
+            }
+        };
+        
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+        
+        // requestWakeLock(); // Can only be requested after user interaction
+    }
 }
 
 function setupEventListeners() {
@@ -183,6 +212,11 @@ function setupEventListeners() {
         lucide.createIcons();
         playerStatus.textContent = 'Playing';
         if (nowPlayingCard) nowPlayingCard.classList.add('playing');
+        
+        // Assert playing state for OS
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
     };
 
     let reconnectAttempts = 0;
@@ -192,6 +226,11 @@ function setupEventListeners() {
         if (nowPlayingCard) nowPlayingCard.classList.add('playing');
         playerStatus.textContent = 'Playing';
         playerStatus.style.color = ''; // Reset color
+        
+        // Re-assert Media Session when it actually starts playing
+        if ('mediaSession' in navigator && audioPlayer.src && !audioPlayer.paused) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
     };
 
     audioPlayer.onpause = () => {
@@ -210,31 +249,36 @@ function setupEventListeners() {
 
     audioPlayer.onerror = (e) => {
         console.error('Audio playback error:', e);
-        if (!audioPlayer.paused && reconnectAttempts < 5) {
+        // Only try to reconnect if not paused by user
+        if (!audioPlayer.paused) {
             reconnectAttempts++;
-            playerStatus.textContent = `Reconnecting (${reconnectAttempts}/5)...`;
+            playerStatus.textContent = `Reconnecting (${reconnectAttempts})...`;
             playerStatus.style.color = 'var(--accent-color)';
+            
+            // Wait slightly longer each time, up to 10 seconds
+            const delay = Math.min(reconnectAttempts * 2000, 10000);
+            
             setTimeout(() => {
-                audioPlayer.load();
-                audioPlayer.play().catch(err => console.log('Reconnect failed', err));
-            }, 3000);
+                if (!audioPlayer.paused) {
+                    audioPlayer.load();
+                    audioPlayer.play().catch(err => console.log('Reconnect failed', err));
+                }
+            }, delay);
         } else {
-            playerStatus.textContent = 'Error Loading Stream';
-            playerStatus.style.color = 'var(--accent-color)';
-            setTimeout(() => {
-                playerStatus.style.color = '';
-            }, 3000);
+            playerStatus.textContent = 'Paused';
         }
     };
     
     audioPlayer.onended = () => {
-        // Live streams normally don't end unless disconnected
-        if (!audioPlayer.paused && reconnectAttempts < 5) {
+        // Live streams normally don't end; if they do, it's often a disconnect
+        if (!audioPlayer.paused) {
             reconnectAttempts++;
-            playerStatus.textContent = `Reconnecting (${reconnectAttempts}/5)...`;
+            playerStatus.textContent = `Retrying Stream (${reconnectAttempts})...`;
             setTimeout(() => {
-                audioPlayer.load();
-                audioPlayer.play().catch(err => console.log('Reconnect failed', err));
+                if (!audioPlayer.paused) {
+                    audioPlayer.load();
+                    audioPlayer.play().catch(err => console.log('Retry failed', err));
+                }
             }, 3000);
         }
     };
@@ -243,15 +287,24 @@ function setupEventListeners() {
         playerStatus.textContent = 'Loading...';
     };
 
-    // Prevent background pausing
+    // Robust background playback
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && !audioPlayer.paused) {
-            // Re-assert playback state to OS
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = 'playing';
+        if (document.hidden) {
+            // Ensure audio doesn't pause when hidden
+            if (!audioPlayer.paused) {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
             }
         }
     });
+
+    // Periodically re-assert playback state for mobile background
+    setInterval(() => {
+        if (!audioPlayer.paused && 'mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
+    }, 20000); // Every 20 seconds
 }
 
 // API Functions
