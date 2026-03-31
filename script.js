@@ -74,6 +74,17 @@ function init() {
     updateVolume(80);
     loadTheme();
     
+    // Restore last played station
+    try {
+        const lastStation = JSON.parse(localStorage.getItem('fm_current_station'));
+        if (lastStation) {
+            updatePlayerUI(lastStation);
+            audioPlayer.src = lastStation.url_resolved || lastStation.url;
+            // Optionally try to auto-play (might be blocked by browser policy)
+            // audioPlayer.play().catch(e => console.log('Autoplay blocked'));
+        }
+    } catch (e) {}
+    
     // Auto-adjusting helper for mobile
     window.addEventListener('resize', () => {
         lucide.createIcons();
@@ -174,9 +185,13 @@ function setupEventListeners() {
         if (nowPlayingCard) nowPlayingCard.classList.add('playing');
     };
 
+    let reconnectAttempts = 0;
+
     audioPlayer.onplaying = () => {
+        reconnectAttempts = 0; // Reset on successful play
         if (nowPlayingCard) nowPlayingCard.classList.add('playing');
         playerStatus.textContent = 'Playing';
+        playerStatus.style.color = ''; // Reset color
     };
 
     audioPlayer.onpause = () => {
@@ -190,16 +205,38 @@ function setupEventListeners() {
     };
 
     audioPlayer.onwaiting = () => {
-        playerStatus.textContent = 'loading...';
+        playerStatus.textContent = 'Buffering...';
     };
 
     audioPlayer.onerror = (e) => {
         console.error('Audio playback error:', e);
-        playerStatus.textContent = 'Error Loading Stream';
-        playerStatus.style.color = 'var(--accent-color)';
-        setTimeout(() => {
-            playerStatus.style.color = 'var(--primary-color)';
-        }, 3000);
+        if (!audioPlayer.paused && reconnectAttempts < 5) {
+            reconnectAttempts++;
+            playerStatus.textContent = `Reconnecting (${reconnectAttempts}/5)...`;
+            playerStatus.style.color = 'var(--accent-color)';
+            setTimeout(() => {
+                audioPlayer.load();
+                audioPlayer.play().catch(err => console.log('Reconnect failed', err));
+            }, 3000);
+        } else {
+            playerStatus.textContent = 'Error Loading Stream';
+            playerStatus.style.color = 'var(--accent-color)';
+            setTimeout(() => {
+                playerStatus.style.color = '';
+            }, 3000);
+        }
+    };
+    
+    audioPlayer.onended = () => {
+        // Live streams normally don't end unless disconnected
+        if (!audioPlayer.paused && reconnectAttempts < 5) {
+            reconnectAttempts++;
+            playerStatus.textContent = `Reconnecting (${reconnectAttempts}/5)...`;
+            setTimeout(() => {
+                audioPlayer.load();
+                audioPlayer.play().catch(err => console.log('Reconnect failed', err));
+            }, 3000);
+        }
     };
 
     audioPlayer.onloadstart = () => {
@@ -433,11 +470,36 @@ function playStation(index, source = 'search', element = null) {
 
     if (!station) return;
 
+    const targetUrl = station.url_resolved || station.url;
+
+    // Prevent restarting the audio if the identical station is clicked again
+    // This allows the song to continue playing uninterrupted.
+    if (audioPlayer.src === targetUrl || audioPlayer.src.includes(targetUrl)) {
+        // If the player is in an error state or wasn't fully loaded, reload it.
+        if (audioPlayer.error || audioPlayer.readyState === 0) {
+            audioPlayer.load();
+        }
+        
+        if (audioPlayer.paused) {
+            audioPlayer.play().catch(e => console.warn('Auto-play failed', e));
+        }
+        
+        // Highlight active item again
+        const items = document.querySelectorAll('.station-item');
+        items.forEach(item => item.classList.remove('active'));
+        if (element) element.classList.add('active');
+        
+        return;
+    }
+
     // Update Player UI
     updatePlayerUI(station);
+    
+    // Save to local storage for persistence across reloads
+    localStorage.setItem('fm_current_station', JSON.stringify(station));
 
     // Load and Play
-    audioPlayer.src = station.url_resolved || station.url;
+    audioPlayer.src = targetUrl;
     audioPlayer.play().catch(e => {
         console.warn('Auto-play failed, user interaction required.', e);
         playerStatus.textContent = 'Click Play to start';
@@ -490,8 +552,18 @@ function updatePlayerUI(station) {
 }
 
 function togglePlay() {
+    if (!audioPlayer.src) {
+        alert("Please select a radio station first!");
+        return;
+    }
+    
+    // If stream ended/errored previously, reload before trying to play again
+    if (audioPlayer.error || audioPlayer.readyState === 0) {
+        audioPlayer.load();
+    }
+
     if (audioPlayer.paused) {
-        audioPlayer.play();
+        audioPlayer.play().catch(e => console.error('Play intercepted or failed:', e));
     } else {
         audioPlayer.pause();
     }
