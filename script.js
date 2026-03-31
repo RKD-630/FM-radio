@@ -7,8 +7,11 @@ let currentStations = [];
 let currentPlaylist = JSON.parse(localStorage.getItem('fm_playlist')) || [];
 let currentStationIndex = -1;
 let currentMode = 'Global'; // 'Global' or 'India'
+let currentSource = 'search'; // 'search' or 'playlist'
 let isMuted = false;
 let lastVolume = 80;
+let reconnectAttempts = 0;
+let playbackTimeout = null;
 
 // DOM Elements
 const audioPlayer = document.getElementById('audio-player');
@@ -86,6 +89,9 @@ function init() {
     // Restore last played station
     try {
         const lastStation = JSON.parse(localStorage.getItem('fm_current_station'));
+        currentSource = localStorage.getItem('fm_current_source') || 'search';
+        currentStationIndex = parseInt(localStorage.getItem('fm_current_index')) || -1;
+        
         if (lastStation) {
             updatePlayerUI(lastStation);
             audioPlayer.src = lastStation.url_resolved || lastStation.url;
@@ -227,6 +233,12 @@ function setupEventListeners() {
         playerStatus.textContent = 'Playing';
         playerStatus.style.color = ''; // Reset color
         
+        // Clear any playback timeouts on success
+        if (playbackTimeout) {
+            clearTimeout(playbackTimeout);
+            playbackTimeout = null;
+        }
+        
         // Re-assert Media Session when it actually starts playing
         if ('mediaSession' in navigator && audioPlayer.src && !audioPlayer.paused) {
             navigator.mediaSession.playbackState = 'playing';
@@ -245,13 +257,35 @@ function setupEventListeners() {
 
     audioPlayer.onwaiting = () => {
         playerStatus.textContent = 'Buffering...';
+        
+        // Set a timeout to jump to next station if buffering lasts too long
+        if (!playbackTimeout) {
+            playbackTimeout = setTimeout(() => {
+                if (!audioPlayer.paused && audioPlayer.readyState < 3) {
+                    console.log('Buffering timeout reached. Jumping to next station.');
+                    playerStatus.textContent = 'Station Timed Out...';
+                    setTimeout(playNext, 1500);
+                }
+            }, 15000); // 15 seconds timeout
+        }
     };
 
     audioPlayer.onerror = (e) => {
         console.error('Audio playback error:', e);
+        
         // Only try to reconnect if not paused by user
         if (!audioPlayer.paused) {
             reconnectAttempts++;
+            
+            if (reconnectAttempts > 3) {
+                // Persistent failure - jump to next station
+                playerStatus.textContent = 'Station offline. Jumping...';
+                playerStatus.style.color = 'var(--accent-color)';
+                reconnectAttempts = 0;
+                setTimeout(playNext, 2000);
+                return;
+            }
+
             playerStatus.textContent = `Reconnecting (${reconnectAttempts})...`;
             playerStatus.style.color = 'var(--accent-color)';
             
@@ -269,17 +303,19 @@ function setupEventListeners() {
         }
     };
     
-    audioPlayer.onended = () => {
-        // Live streams normally don't end; if they do, it's often a disconnect
+    audioPlayer.onstalled = () => {
+        console.log('Stream stalled. Attempting to recover...');
         if (!audioPlayer.paused) {
-            reconnectAttempts++;
-            playerStatus.textContent = `Retrying Stream (${reconnectAttempts})...`;
-            setTimeout(() => {
-                if (!audioPlayer.paused) {
-                    audioPlayer.load();
-                    audioPlayer.play().catch(err => console.log('Retry failed', err));
-                }
-            }, 3000);
+            audioPlayer.load();
+            audioPlayer.play().catch(e => console.log('Stalled recovery failed', e));
+        }
+    };
+
+    audioPlayer.onended = () => {
+        // Live streams normally don't end; if they do, it's often a disconnect or playlist end
+        if (!audioPlayer.paused) {
+            console.log('Stream ended. Jumping to next.');
+            playNext();
         }
     };
 
@@ -514,14 +550,19 @@ function saveAllDiscovered() {
 // Playback Logic
 function playStation(index, source = 'search', element = null) {
     let station;
+    currentSource = source;
+    currentStationIndex = index;
+
     if (source === 'search') {
         station = currentStations[index];
-        currentStationIndex = index;
     } else {
         station = currentPlaylist[index];
     }
 
-    if (!station) return;
+    if (!station) {
+        console.warn('No station found at index', index, 'for source', source);
+        return;
+    }
 
     const targetUrl = station.url_resolved || station.url;
 
@@ -550,6 +591,8 @@ function playStation(index, source = 'search', element = null) {
     
     // Save to local storage for persistence across reloads
     localStorage.setItem('fm_current_station', JSON.stringify(station));
+    localStorage.setItem('fm_current_source', currentSource);
+    localStorage.setItem('fm_current_index', currentStationIndex);
 
     // Load and Play
     audioPlayer.src = targetUrl;
@@ -577,12 +620,21 @@ function playStation(index, source = 'search', element = null) {
         navigator.mediaSession.playbackState = 'playing';
     }
 
-    // Add active class
+    // Add active class to the current list item
     const items = document.querySelectorAll('.station-item');
     items.forEach(item => item.classList.remove('active'));
     
     if (element) {
         element.classList.add('active');
+    } else {
+        // If no element passed, find the correct one by index and source
+        const viewGrid = currentSource === 'search' ? stationsGrid : (fullPlaylistList || quickPlaylistList);
+        if (viewGrid) {
+            const listItems = viewGrid.querySelectorAll('.station-item');
+            if (listItems[index]) {
+                listItems[index].classList.add('active');
+            }
+        }
     }
 }
 
@@ -629,15 +681,31 @@ function togglePlay() {
 }
 
 function playNext() {
-    if (currentStations.length === 0) return;
-    currentStationIndex = (currentStationIndex + 1) % currentStations.length;
-    playStation(currentStationIndex, 'search');
+    const list = currentSource === 'search' ? currentStations : currentPlaylist;
+    if (list.length === 0) return;
+    
+    currentStationIndex = (currentStationIndex + 1) % list.length;
+    playStation(currentStationIndex, currentSource);
+    
+    // Auto-scroll into view if in a list
+    setTimeout(scrollToActive, 100);
 }
 
 function playPrevious() {
-    if (currentStations.length === 0) return;
-    currentStationIndex = (currentStationIndex - 1 + currentStations.length) % currentStations.length;
-    playStation(currentStationIndex, 'search');
+    const list = currentSource === 'search' ? currentStations : currentPlaylist;
+    if (list.length === 0) return;
+    
+    currentStationIndex = (currentStationIndex - 1 + list.length) % list.length;
+    playStation(currentStationIndex, currentSource);
+    
+    setTimeout(scrollToActive, 100);
+}
+
+function scrollToActive() {
+    const activeItem = document.querySelector('.station-item.active');
+    if (activeItem) {
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 // Volume Controls
