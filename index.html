@@ -1,263 +1,349 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global FM | Internet Radio Discovery</title>
-    <meta name="description" content="Discover and stream world FM internet stations with Global FM. Rapidly scan, play, and save your favorite stations.">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="app-container">
-        <!-- Background elements for visual flair -->
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        
-        <header>
-            <div class="logo">
-                <i data-lucide="radio"></i>
-                <span>Global FM</span>
-            </div>
-            <div class="search-bar">
-                <input type="text" id="station-search" placeholder="Scan world stations (country, name, tag)...">
-                <button id="scan-btn" class="primary-btn" title="Scan World Stations">
-                    <i data-lucide="globe"></i>
-                    <span>Global</span>
-                </button>
-                <button id="scan-india-btn" class="india-btn" title="Scan Indian Stations">
-                    <i data-lucide="map-pin"></i>
-                    <span>India</span>
-                </button>
-            </div>
-            <button id="theme-toggle" class="icon-btn theme-btn" title="Toggle Light/Dark Mode">
-                <i data-lucide="moon" id="theme-icon"></i>
-            </button>
-        </header>
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Audio Cutter Pro — Cut, Convert, Export</title>
+<link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Audio Cutter Pro&quot;,&quot;short_name&quot;:&quot;AudioCutter&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230f172a&quot;,&quot;theme_color&quot;:&quot;%236366f1&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml;utf8,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22&gt;&lt;rect width=%22192%22 height=%22192%22 rx=%2240%22 fill=%22%236366f1%22/&gt;&lt;path d=%22M50 130 V62 M80 140 V52 M110 120 V72 M140 130 V62%22 stroke=%22white%22 stroke-width=%2214%22 stroke-linecap=%22round%22/&gt;&lt;/svg&gt;&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}" />
 
-        <nav class="main-tabs glass" id="main-tabs">
-            <button class="tab-btn active" data-tab="discovery">
-                <i data-lucide="search"></i>
-                <span>Discovery</span>
-            </button>
-            <button class="tab-btn" data-tab="playlist">
-                <i data-lucide="list-music"></i>
-                <span>Playlist</span>
-            </button>
-            <button class="tab-btn" data-tab="scanner">
-                <i data-lucide="radio"></i>
-                <span>FM Scanner</span>
-            </button>
-        </nav>
+<link rel="stylesheet" href="style.css" /></head>
+<body data-theme="dark">
 
-        <div id="discovery-view">
-            <nav class="category-nav glass" id="categories-bar">
-                <span class="nav-label" id="current-mode-label">Global Categories:</span>
-                <div class="cat-scroll">
-                    <button class="cat-btn active" data-tag="">All</button>
-                    <button class="cat-btn" data-tag="hindi">Hindi</button>
-                    <button class="cat-btn" data-tag="bhakti">Bhakti</button>
-                    <button class="cat-btn" data-tag="news">News</button>
-                    <button class="cat-btn" data-tag="bollywood">Bollywood</button>
-                    <button class="cat-btn" data-tag="bangla">Bangla</button>
-                    <button class="cat-btn" data-tag="mix">Mix</button>
-                    <button class="cat-btn" data-tag="dance">Dance</button>
-                    <button class="cat-btn" data-tag="dj">DJ Radio</button>
-                    <button class="cat-btn" data-tag="hd">HD Radio</button>
-                    <button class="cat-btn" data-tag="music">Music</button>
-                    <div class="india-only-cats" style="display: none; gap: 0.5rem;">
-                    <button class="cat-btn" data-tag="south">South</button>
-                    <button class="cat-btn" data-tag="tamil">Tamil</button>
-                    </div>
-                </div>
-            </nav>
-
-        <main>
-            <section class="hero-section">
-                <div class="now-playing-card glass">
-                    <div class="station-visual">
-                        <img id="current-station-info-img" src="https://via.placeholder.com/200?text=Global+FM" alt="Station Logo">
-                    </div>
-                    <div class="station-details">
-                        <span class="status-badge" id="player-status">Ready</span>
-                        <h1 id="current-station-name">Choose a Station</h1>
-                        <marquee id="current-station-meta" direction="left" height="25px" width="60%" scrollamount="5">हमारे एप्लिकेशन का उपयोग करने के लिए धन्यवाद। हम आपके विश्वास और समर्थन के लिए वास्तव में आभारी हैं। हमारा लक्ष्य आपको एक सहज, विश्वसनीय और सहायक अनुभव प्रदान करना है, और हम आपकी आवश्यकताओं को बेहतर ढंग से पूरा करने के लिए अपनी सेवाओं को बेहतर बनाने के लिए लगातार प्रयासरत हैं। आपकी प्रतिक्रिया और सहयोग हमें विकास और नवाचार में मदद करते हैं, इसलिए कृपया अपने विचार हमारे साथ साझा करने में संकोच न करें। हमें खुशी है कि आप हमारे समुदाय का हिस्सा हैं और हम भविष्य में भी आपकी सेवा करते रहने के लिए तत्पर हैं। ----RKD --
-</marquee> 
-                        <div class="station-actions">
-                            <button id="add-to-playlist-btn" class="secondary-btn">
-                                <i data-lucide="plus-circle"></i>
-                                Save to Playlist
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="banner-right">
-                        <div class="equalizer-container">
-                            <div class="colorful-equalizer" id="banner-equalizer">
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                                <div class="eq-bar"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="content-grid" id="discovery-grid">
-                <div class="stations-column">
-                    <div class="section-header">
-                        <h2>Discovered Stations</h2>
-                        <span id="results-count">0 stations found</span>
-                    </div>
-                    <div id="stations-grid" class="stations-list">
-                        <!-- Stations will be injected here -->
-                        <div class="loader-container" id="main-loader" style="display: none;">
-                            <div class="loader"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <aside class="playlist-column desktop-playlist">
-                    <div class="section-header">
-                        <h2>Quick Playlist</h2>
-                    </div>
-                    <div id="quick-playlist-list" class="stations-list">
-                        <!-- Playlist items will be injected here -->
-                    </div>
-                </aside>
-            </section>
-        </div>
-
-        <div id="playlist-view" style="display: none;">
-            <section class="content-grid-single">
-                <div class="section-header">
-                    <h2>Your Full Playlist</h2>
-                </div>
-                <div id="full-playlist-list" class="stations-list">
-                    <!-- Playlist will be here -->
-                </div>
-            </section>
-        </div>
-
-        <div id="scanner-view" style="display: none;">
-            <section class="scanner-container glass">
-                <div class="scanner-header">
-                    <h2>Manual FM Scanner</h2>
-                    <p>Tune into a specific frequency and add your favorite stations manually.</p>
-                </div>
-                
-                <div class="scanner-layout">
-                    <div class="tuner-column">
-                        <div class="frequency-display">
-                            <span id="freq-value">91.1</span>
-                            <span class="unit">MHz</span>
-                        </div>
-                        <div class="dial-container">
-                            <input type="range" id="freq-slider" min="87.5" max="108.0" step="0.1" value="91.1">
-                        </div>
-                        <div class="scanner-visual">
-                            <div class="scan-line" id="scan-line"></div>
-                            <div class="signal-bars">
-                                <span></span><span></span><span></span><span></span><span></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-column glass">
-                        <h3>Add New Station</h3>
-                        <div class="input-group">
-                            <label>Station Name</label>
-                            <input type="text" id="custom-name" placeholder="e.g. My Favorite FM">
-                        </div>
-                        <div class="input-group">
-                            <label>Stream URL (m3u8, mp3, etc.)</label>
-                            <input type="text" id="custom-url" placeholder="https://...">
-                        </div>
-                        <div class="input-group">
-                            <label>Logo/Favicon URL (Optional)</label>
-                            <input type="text" id="custom-icon" placeholder="https://...">
-                        </div>
-                        <div class="scanner-actions">
-                            <button id="add-custom-btn" class="primary-btn">
-                                <i data-lucide="plus"></i>
-                                Add to My Radio
-                            </button>
-                            <div class="divider"><span>OR</span></div>
-                            <div class="scanner-auto-actions">
-                                <button id="auto-scan-btn" class="accent-btn">
-                                    <i data-lucide="zap"></i>
-                                    Auto Scan Frequencies
-                                </button>
-                                <button id="save-all-btn" class="secondary-btn" style="display: none;">
-                                    <i data-lucide="save"></i>
-                                    Save All Discovered
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
-
-        <footer class="player-controls glass">
-            <div class="player-info">
-                <img id="player-mini-img" src="https://via.placeholder.com/48?text=FM" alt="Station">
-                <div class="player-text">
-                    <h4 id="player-mini-name">Not Playing</h4>
-                    <p id="player-mini-meta">—</p>
-                </div>
-            </div>
-
-            <div class="main-controls">
-                <button id="prev-btn" class="control-btn" title="Previous">
-                    <i data-lucide="skip-back"></i>
-                </button>
-                <button id="play-pause-btn" class="control-btn play-btn" title="Play/Pause">
-                    <i data-lucide="play" id="play-icon"></i>
-                </button>
-                <button id="next-btn" class="control-btn" title="Next">
-                    <i data-lucide="skip-forward"></i>
-                </button>
-            </div>
-
-            <div class="volume-controls">
-                <button id="mute-btn" class="control-btn" title="Mute/Unmute">
-                    <i data-lucide="volume-2" id="volume-icon"></i>
-                </button>
-                <div class="volume-slider-container">
-                    <input type="range" id="volume-slider" min="0" max="100" value="80">
-                </div>
-            </div>
-        </footer >
-
-        <!-- Hidden Audio Element -->
-        <audio id="audio-player" autoplay preload="auto" playsinline></audio>
+<div class="app">
+  <!-- Top Toolbar -->
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M4 18V6M8 20V4M12 16V8M16 18V6M20 14V10"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        Audio Cutter Pro
+        <small>Cut • Convert • Export</small>
+      </div>
     </div>
+    <button class="icon-btn" id="btnImportTop" title="Import file">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="btnNewFile" title="New File">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="btnHelp" title="Help">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="btnUndo" title="Undo (Ctrl+Z)" disabled="">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7v6h6M21 17a9 9 0 0 0-15-6.7L3 13"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="btnRedo" title="Redo (Ctrl+Y)" disabled="">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 7v6h-6M3 17a9 9 0 0 1 15-6.7L21 13"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="btnTheme" title="Toggle theme">
+      <svg id="iconTheme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </header>
 
-    <script src="script.js"></script>
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-    </script>
-</body>
-</html>
+  <main class="main">
+    <!-- Import Card -->
+    <section class="card" id="importCard">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+          </svg>
+        </div>
+        <h3>Drop audio or video here</h3>
+        <p>or tap to browse your files</p>
+        <button class="btn btn-primary" id="btnPickFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          Choose File
+        </button>
+        <input type="file" id="fileInput" accept="audio/*,video/*,.mp3,.wav,.aac,.m4a,.ogg,.flac,.wma,.opus,.mp4,.mov,.mkv,.avi,.webm,.3gp" hidden="" />
+        <div style="margin-top:14px;font-size:11px;color:var(--text-dim)">
+          Supports: MP3, WAV, AAC, M4A, OGG, FLAC, WMA, OPUS, MP4, MOV, MKV, AVI, WEBM, 3GP
+        </div>
+      </div>
+    </section>
+
+    <!-- File Info Card (hidden until file loaded) -->
+    <section class="card hidden" id="fileInfoCard">
+      <h3 class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        File Info
+      </h3>
+      <div class="file-info">
+        <div class="file-info-item"><div class="label">Name</div><div class="value" id="infoName">—</div></div>
+        <div class="file-info-item"><div class="label">Format</div><div class="value" id="infoFormat">—</div></div>
+        <div class="file-info-item"><div class="label">Duration</div><div class="value" id="infoDuration">—</div></div>
+        <div class="file-info-item"><div class="label">Size</div><div class="value" id="infoSize">—</div></div>
+      </div>
+      <div class="progress hidden" id="loadProgress">
+        <div class="progress-bar" id="loadProgressBar"></div>
+      </div>
+      <div class="progress-text hidden" id="loadProgressText"></div>
+    </section>
+
+    <!-- Waveform Card (hidden until loaded) -->
+    <section class="card hidden" id="waveformCard">
+      <h3 class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-9 4 18 3-9h5"/></svg>
+        Waveform
+      </h3>
+      <div class="waveform-wrap">
+        <div class="waveform-scroll" id="waveformScroll">
+          <div class="waveform-inner" id="waveformInner">
+            <canvas id="waveCanvas"></canvas>
+            <div class="playhead" id="playhead" style="left:0"></div>
+          </div>
+        </div>
+        <div class="ruler" id="ruler"></div>
+      </div>
+      <div class="time-display">
+        <span class="current" id="timeCurrent">00:00.000</span>
+        <span class="total" id="timeTotal">00:00.000</span>
+      </div>
+      <div class="zoom-controls">
+        <button class="icon-btn" id="btnZoomOut" title="Zoom Out" style="width:32px;height:32px;min-height:32px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <input type="range" id="zoomSlider" min="1" max="20" step="0.5" value="1" />
+        <button class="icon-btn" id="btnZoomIn" title="Zoom In" style="width:32px;height:32px;min-height:32px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+        </button>
+        <span class="zoom-label" id="zoomLabel">1.0x</span>
+      </div>
+    </section>
+
+    <!-- Playback Card -->
+    <section class="card hidden" id="playbackCard">
+      <h3 class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Playback
+      </h3>
+      <div class="playback">
+        <button class="ctrl-btn" id="btnSkipBack" title="Skip back 5s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19l-7-7 7-7"/><path d="M18 19l-7-7 7-7"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnPrev" title="Previous segment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        </button>
+        <button class="play-btn" id="btnPlay" title="Play/Pause (Space)">
+          <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnNext" title="Next segment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnSkipForward" title="Skip forward 5s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5l7 7-7 7"/><path d="M6 5l7 7-7 7"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnStop" title="Stop">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnLoop" title="Loop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnMute" title="Mute/Unmute">
+          <svg id="iconMute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </button>
+        <button class="ctrl-btn" id="btnPlaybackVolume" title="Volume Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </button>
+        <select class="speed-select" id="speedSelect" title="Playback speed">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected="">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Segments Card -->
+    <section class="card hidden" id="segmentsCard">
+      <h3 class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Segments
+      </h3>
+      <div class="segments" id="segmentsList"></div>
+      <div class="empty-state" id="segmentsEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div>No segments yet. Use Split (S) to divide the audio.</div>
+      </div>
+    </section>
+
+    <!-- Export Card -->
+    <section class="card hidden" id="exportCard">
+      <h3 class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export Settings
+      </h3>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>File name</label>
+        <input type="text" id="exportName" value="edited-audio" placeholder="Enter file name" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Format</label>
+          <select id="exportFormat">
+            <option value="mp3" selected="">MP3</option>
+            <option value="wav">WAV</option>
+            <option value="wma">WMA</option>
+            <option value="ogg">OGG</option>
+            <option value="aac">AAC</option>
+            <option value="au">AU</option>
+            <option value="flac">FLAC</option>
+            <option value="m4a">M4A</option>
+            <option value="mka">MKA</option>
+            <option value="aiff">AIFF</option>
+            <option value="opus">OPUS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Channels</label>
+          <select id="exportChannels">
+            <option value="stereo" selected="">Stereo</option>
+            <option value="mono">Mono</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px" id="bitrateGroup">
+        <label id="bitrateLabel">Bitrate</label>
+        <div class="chip-row" id="bitrateChips">
+          <button class="chip" data-bitrate="128">128 kbps</button>
+          <button class="chip active" data-bitrate="192">192 kbps</button>
+          <button class="chip" data-bitrate="256">256 kbps</button>
+          <button class="chip" data-bitrate="320">320 kbps</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Sample Rate</label>
+        <div class="chip-row" id="sampleChips">
+          <button class="chip active" data-sample="44100">44.1 kHz</button>
+          <button class="chip" data-sample="48000">48 kHz</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnExport">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export Audio
+      </button>
+      <div class="progress hidden" id="exportProgress">
+        <div class="progress-bar" id="exportProgressBar"></div>
+      </div>
+      <div class="progress-text hidden" id="exportProgressText"></div>
+    </section>
+
+    <!-- Projects Card -->
+    <section class="card">
+      <h3 class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Saved Projects
+      </h3>
+      <div id="projectsList"></div>
+      <div class="empty-state" id="projectsEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <div>No saved projects yet.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Toolbar -->
+  <nav class="bottombar">
+    <div class="bottom-actions">
+      <button class="bottom-btn" id="btnBottomPlay" title="Play">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        <span>Play</span>
+      </button>
+      <button class="bottom-btn" id="btnBottomSplit" title="Split (S)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="8 6 12 2 16 6"/><polyline points="8 18 12 22 16 18"/></svg>
+        <span>Split</span>
+      </button>
+      <button class="bottom-btn" id="btnBottomCut" title="Cut selection">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+        <span>Cut</span>
+      </button>
+      <button class="bottom-btn" id="btnBottomDelete" title="Delete segment">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <span>Delete</span>
+      </button>
+      <button class="bottom-btn" id="btnBottomTrim" title="Trim to selection">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 17h16M8 3v18M16 3v18"/></svg>
+        <span>Trim</span>
+      </button>
+      <button class="bottom-btn" id="btnBottomVolume" title="Volume">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <span>Volume</span>
+      </button>
+      <button class="bottom-btn" id="btnBottomConvert" title="Convert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Convert</span>
+      </button>
+      <button class="bottom-btn primary" id="btnBottomSave" title="Save/Export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- Help Modal -->
+<div class="modal-backdrop" id="helpModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>How to Use Audio Cutter Pro</h2>
+    <div style="line-height:1.6; color:var(--text-dim); font-size:14px; margin-bottom:20px;">
+      <p><strong style="color:var(--text)">Importing:</strong> Click "Choose File" or drop an audio/video file.</p>
+      <p><strong style="color:var(--text)">Selecting &amp; Cutting:</strong> Click and drag on the waveform to select a section of audio. Click the <strong>Cut</strong> button (scissors) to delete the selected part, or the <strong>Trim</strong> button to keep ONLY the selection and remove everything else.</p>
+      <p><strong style="color:var(--text)">Splitting:</strong> Move the playhead to any position and click <strong>Split</strong>. This breaks the track into smaller segments shown in the list. You can select and delete individual segments.</p>
+      <p><strong style="color:var(--text)">Zooming:</strong> Use the zoom controls under the waveform or pinch to zoom in for precise editing.</p>
+      <p><strong style="color:var(--text)">Saving MP3:</strong> When you're done, scroll down to Export Settings. Enter a file name, select <strong>MP3</strong> as the format, choose your desired quality (bitrate), and click <strong>Export Audio</strong> or <strong>Save</strong> at the bottom. The file will be processed and downloaded automatically.</p>
+    </div>
+    <button class="btn btn-primary btn-block" id="btnCloseHelp">Got it!</button>
+  </div>
+</div>
+
+<!-- Volume Modal -->
+<div class="modal-backdrop" id="volumeModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Volume &amp; Effects</h2>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Volume: <span id="volumeVal">100%</span></label>
+      <input type="range" id="volumeSlider" min="0" max="200" value="100" />
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Fade In (seconds)</label>
+      <input type="number" id="fadeIn" min="0" max="30" step="0.1" value="0" />
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Fade Out (seconds)</label>
+      <input type="number" id="fadeOut" min="0" max="30" step="0.1" value="0" />
+    </div>
+    <button class="btn btn-primary btn-block" id="btnApplyEffects">Apply Effects</button>
+    <button class="btn btn-block" id="btnCloseVolume" style="margin-top:8px">Close</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- FFmpeg WASM -->
+
+
+
+
+<script src="script.js"></script></body></html>
